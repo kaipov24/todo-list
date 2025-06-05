@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -85,4 +86,47 @@ func UpdateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func UpdateTaskStatus(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid task ID", http.StatusBadRequest)
+		return
+	}
+
+	var input struct {
+		Done *bool `json:"done"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if input.Done == nil {
+		http.Error(w, "Field 'done' is required", http.StatusBadRequest)
+		return
+	}
+
+	query := "UPDATE tasks SET done = $1 WHERE id = $2"
+	result, err := db.Exec(query, *input.Done, id)
+	if err != nil {
+		http.Error(w, "Failed to update task status: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		http.Error(w, "Failed to check update result", http.StatusInternalServerError)
+		return
+	}
+	if rows == 0 {
+		http.Error(w, "Task not found", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Task %d marked as %v\n", id, *input.Done)
 }

@@ -40,6 +40,7 @@ func main() {
 	r.Get("/tasks", GetTasks)
 	r.Post("/tasks", CreateTask)
 	r.Patch("/tasks/{id}", UpdateTask)
+	r.Patch("/tasks/{id}/status", UpdateTaskStatus)
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
