@@ -41,6 +41,7 @@ func main() {
 	r.Post("/tasks", CreateTask)
 	r.Patch("/tasks/{id}", UpdateTask)
 	r.Patch("/tasks/{id}/status", UpdateTaskStatus)
+	r.Delete("/tasks/{id}", DeleteTask)
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

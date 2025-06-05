@@ -130,3 +130,22 @@ func UpdateTaskStatus(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Task %d marked as %v\n", id, *input.Done)
 }
+
+func DeleteTask(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid task ID", http.StatusBadRequest)
+		return
+	}
+
+	query := "DELETE FROM tasks WHERE id = $1"
+	_, err = db.Exec(query, id)
+	if err != nil {
+		http.Error(w, "Failed to update task status: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+}
