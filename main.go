@@ -38,5 +38,6 @@ func main() {
 	}
 
 	r.Get("/tasks", GetTasks)
+	r.Post("/tasks", CreateTask)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
