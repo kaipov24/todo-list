@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi"
 )
 
 func GetTasks(w http.ResponseWriter, r *http.Request) {
@@ -44,4 +47,42 @@ func CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	respondWithJSON(w, 200, t)
+}
+
+func UpdateTask(w http.ResponseWriter, r *http.Request) {
+
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid task ID", http.StatusBadRequest)
+		return
+	}
+
+	var input struct {
+		Title *string `json:"title"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if input.Title == nil {
+		http.Error(w, "Title field is required", http.StatusBadRequest)
+		return
+	}
+
+	query := "UPDATE tasks SET title = $1 WHERE id = $2"
+	result, err := db.Exec(query, *input.Title, id)
+	if err != nil {
+		http.Error(w, "Failed to update title: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		http.Error(w, "Task not found", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
