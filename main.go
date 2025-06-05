@@ -2,12 +2,15 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
+
+	_ "github.com/lib/pq"
 )
 
 var db *sql.DB
@@ -16,18 +19,24 @@ func main() {
 	godotenv.Load()
 	r := chi.NewRouter()
 
-	dbURL := os.Getenv("DB_URL")
+	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
-		log.Fatal("DB_URL must be set")
+		log.Fatal("DATABASE_URL must be set")
 	}
 
-	_, err := sql.Open("postgres", dbURL)
+	var err error
+	db, err = sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatalf("Error opening database: %s", err)
 	}
 
-	r.Get("/tasks", GetTasks)
-	// r.Post("/tasks", CreateTask)
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Cannot connect to DB: ", err)
+	} else {
+		fmt.Println("Connected to database!")
+	}
 
+	r.Get("/tasks", GetTasks)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
