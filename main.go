@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -38,8 +39,16 @@ func main() {
 		fmt.Println("Connected to database!")
 	}
 
+	corsOrigins := os.Getenv("CORS_ORIGINS")
+	var allowedOrigins []string
+	if corsOrigins != "" {
+		allowedOrigins = strings.Split(corsOrigins, ",")
+	} else {
+		allowedOrigins = []string{"http://localhost:3000"}
+	}
+
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		AllowCredentials: true,
