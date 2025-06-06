@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error opening database: %s", err)
 	}
-
+	//test the connection
 	err = db.Ping()
 	if err != nil {
 		log.Fatal("Cannot connect to DB: ", err)
