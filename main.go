@@ -51,5 +51,9 @@ func main() {
 	r.Patch("/tasks/{id}/status", UpdateTaskStatus)
 	r.Delete("/tasks/{id}", DeleteTask)
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
